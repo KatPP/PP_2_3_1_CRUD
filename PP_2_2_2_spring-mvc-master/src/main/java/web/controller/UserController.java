@@ -6,18 +6,21 @@ import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import web.model.User;
-import web.service.UserService;
+import web.service.UserServiceImp;
 
 
 @Controller
+@RequestMapping("/")
 public class UserController {
 
-	private UserService userService;
+
+	private final UserServiceImp userServiceImp;
 
 	@Autowired
-	public void setUserService(UserService userService) {
-		this.userService = userService;
+	public UserController(UserServiceImp userServiceImp) {
+		this.userServiceImp = userServiceImp;
 	}
+
 
 	@GetMapping(value = "/")
 	public String welcome() {
@@ -26,7 +29,7 @@ public class UserController {
 
 	@GetMapping(value = "users")
 	public String allUsers(ModelMap model) {
-		model.addAttribute("users", userService.getAllUsers());
+		model.addAttribute("users", userServiceImp.findAll());
 		return "users";
 	}
 
@@ -39,32 +42,32 @@ public class UserController {
 
 	@PostMapping(value = "users/add")
 	public String addUser(@ModelAttribute("user") User user) {
-		userService.addUser(user);
+		userServiceImp.save(user);
 		return "redirect:/";
 	}
 
 	@GetMapping(value = "users/edit/{id}")
 	public String editUser(ModelMap model, @PathVariable("id") Long id) {
-		User user = userService.getUserById(id);
+		User user = userServiceImp.findOne(id);
 		model.addAttribute("user", user);
 		return "editUser";
 	}
 
 	@PostMapping(value = "users/edit")
 	public String edit(@ModelAttribute("user") User user) {
-		userService.editUser(user);
+		userServiceImp.update(user.getId(), user);
 		return "redirect:/";
 	}
 
 	@GetMapping("users/delete")
 	public String deleteUserById(@RequestParam("id") Long id) {
-		userService.removeUserById(id);
+		userServiceImp.delete(id);
 		return "redirect:/";
 	}
 
 	@GetMapping("users/{id}")
 	public String show(@PathVariable("id") Long id, ModelMap modelMap) {
-		modelMap.addAttribute("user", userService.getUserById(id));
+		modelMap.addAttribute("user", userServiceImp.findOne(id));
 		return "show";
 	}
 	
